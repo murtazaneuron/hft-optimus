@@ -1,0 +1,283 @@
+name: CI # Workflow display name
+# run-name: ${{ github.actor }} triggered  # Run display name
+
+on: # Triggers (required)
+    push:
+        branches: [main, master] # [main, dev]
+        # branches-ignore: [temp/**]
+        #     tags: ['v*']
+        #     paths: ['src/**']
+
+    pull_request:
+        # types: [opened, synchronize, reopened]
+        branches: [main, master]
+# schedule:
+#   - cron: '0 9 * * 1'     # Every Monday 9am UTC
+
+# workflow_dispatch:  # Manual trigger
+#   inputs:
+#     env:
+#       description: 'Environment'
+#       required: true
+#       default: 'staging'
+#       type: choice
+#       options: [staging, prod]
+
+# defaults: ... # Default settings
+
+env: # Global env vars
+    CARGO_TERM_COLOR: always
+    CARGO_INCREMENTAL: 0 # disable incremental; full clean builds on CI
+    RUST_BACKTRACE: short
+    RUST_LOG: hft_optimus=debug
+
+# Cancel in-flight runs for the same branch on new push
+concurrency: # Concurrency control
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
+
+# jobs:
+#   build:
+#     name: Build App
+#     runs-on: ubuntu-latest   # or windows-latest, macos-latest
+#     timeout-minutes: 30
+#     needs: [test]            # Job dependencies
+#     if: github.ref == 'refs/heads/main'
+#     environment: production  # Deployment environment
+#     outputs:
+#       version: ${{ steps.get-version.outputs.version }}
+#     env:
+#       NODE_ENV: production
+#     strategy:
+#       fail-fast: false
+#       matrix:
+#         node: [18, 20]
+#         os: [ubuntu-latest, windows-latest]
+#     steps: ... # next section
+
+# steps:
+#   - name: Checkout
+#     uses: actions/checkout@v4 # next section
+#     with:
+#       fetch-depth: 0
+
+#   - name: Run script
+#     run: |
+#       echo "Hello"
+#       npm ci
+#     shell: bash
+#     working-directory: ./app
+#     env:
+#       TOKEN: ${{ secrets.MY_TOKEN }}
+#     id: my-step
+#     if: success()
+#     continue-on-error: true
+#     timeout-minutes: 5
+
+# uses: actions/checkout@v4
+# uses: actions/setup-node@v4
+#   with:
+#     node-version: '20'
+#     cache: 'npm'
+
+# uses: actions/setup-python@v5
+#   with:
+#     python-version: '3.12'
+
+# uses: actions/cache@v4
+#   with:
+#     path: ~/.npm
+#     key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+
+# uses: actions/upload-artifact@v4
+#   with:
+#     name: build-output
+#     path: dist/
+
+# uses: actions/download-artifact@v4
+
+# uses: docker/login-action@v3
+# uses: docker/build-push-action@v5
+
+jobs: # Jobs (required)
+    # ── Format check ─────────────────────────────────────────────────────────
+    # Runs in its own job on nightly so the nightly toolchain never touches
+    # the matrix job.  rustfmt.toml uses nightly-only options
+    # (imports_granularity, group_imports, wrap_comments, etc.) which require
+    # unstable_features = true and a nightly rustfmt binary.
+    fmt:
+        name: fmt (nightly rustfmt)
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+
+            - name: Install nightly rustfmt
+              uses: dtolnay/rust-toolchain@nightly
+              with:
+                  components: rustfmt
+
+            - name: Format check  [nightly rustfmt + rustfmt.toml unstable opts]
+              run: cargo fmt --all -- --check
+
+    ci:
+        name: CI - ${{ matrix.rust }}
+        runs-on: ubuntu-latest
+        strategy:
+            matrix:
+                rust: [stable, "1.97.1"] # stable + MSRV
+
+        steps:
+            - uses: actions/checkout@v4
+
+            - name: Install Rust ${{ matrix.rust }}
+              uses: dtolnay/rust-toolchain@master
+              with:
+                  toolchain: ${{ matrix.rust }}
+                  # llvm-tools-preview: required by cargo-llvm-cov (coverage step).
+                  # clippy: used on stable only (gated below); harmless on MSRV.
+                  # rustfmt is intentionally omitted – the fmt check runs in its
+                  # own dedicated `fmt` job under nightly (see above).
+                  components: clippy, llvm-tools-preview
+
+            - name: Cache cargo registry
+              # Only the registry (index + crate tarballs) and git checkouts
+              # are cached.  target/ is intentionally excluded: at ~3 GB it
+              # takes longer to download and extract than a clean rebuild from
+              # a warm registry, and caused step-timeout cancellations.
+              uses: actions/cache@v4
+              with:
+                  path: |
+                      ~/.cargo/registry/index
+                      ~/.cargo/registry/cache
+                      ~/.cargo/git/db
+                  key: ${{ runner.os }}-cargo-${{ matrix.rust }}-${{ hashFiles('**/Cargo.toml') }}
+                  restore-keys: ${{ runner.os }}-cargo-${{ matrix.rust }}-
+
+            - name: Clippy
+              if: matrix.rust == 'stable'
+              run: cargo clippy --all-targets -- -D warnings
+
+            - name: Build (release)
+              run: cargo build --release
+
+            - name: Tests (offline stub mode)
+              run: SKIP_LLM=1 cargo test --workspace
+
+            - name: Install cargo-llvm-cov
+              if: matrix.rust == 'stable'
+              uses: taiki-e/install-action@v2
+              with:
+                  # taiki-e/install-action installs the cargo-llvm-cov *binary*;
+                  # the llvm-tools-preview *component* is handled above in the
+                  # dtolnay/rust-toolchain step so both halves are present.
+                  tool: cargo-llvm-cov
+
+            - name: Coverage (llvm-cov)
+              if: matrix.rust == 'stable'
+              run: |
+                  SKIP_LLM=1 cargo llvm-cov \
+                    --workspace \
+                    --lcov --output-path lcov.info \
+                    --ignore-filename-regex 'tests/'
+                  SKIP_LLM=1 cargo llvm-cov report \
+                    --html --output-dir coverage-html
+
+            - name: Upload coverage report (HTML artifact)
+              if: matrix.rust == 'stable'
+              uses: actions/upload-artifact@v4
+              with:
+                  name: coverage-html
+                  path: coverage-html/
+                  retention-days: 30
+
+            - name: Check Codecov token
+              # secrets.* is not accessible in if: expressions, so we write
+              # a boolean step output that the upload step can gate on.
+              if: matrix.rust == 'stable'
+              id: codecov_token_check
+              env:
+                  CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+              run: |
+                  if [ -n "$CODECOV_TOKEN" ]; then
+                    echo "present=true" >> "$GITHUB_OUTPUT"
+                  else
+                    echo "present=false" >> "$GITHUB_OUTPUT"
+                    echo "::notice::CODECOV_TOKEN secret is not set – skipping Codecov upload."
+                    echo "::notice::To enable: Settings → Secrets → Actions → New secret: CODECOV_TOKEN"
+                  fi
+
+            - name: Upload lcov to Codecov
+              # Skipped entirely when CODECOV_TOKEN is absent; no noisy
+              # "Token required" errors on forks or fresh repos.
+              # HTML artifact (step above) is always uploaded regardless.
+              if: >-
+                  matrix.rust == 'stable' &&
+                  steps.codecov_token_check.outputs.present == 'true'
+              uses: codecov/codecov-action@v5
+              with:
+                  files: lcov.info
+                  fail_ci_if_error: true
+                  token: ${{ secrets.CODECOV_TOKEN }}
+
+            - name: Docs
+              if: matrix.rust == 'stable'
+              env:
+                  RUSTDOCFLAGS: "--cfg docsrs -D warnings"
+              run: cargo doc --no-deps
+
+# permissions: ...            # GitHub token permissions # in later section
+
+# workflow_call:             # Reusable workflow
+#   release:
+#     types: [published]
+
+# Contexts & Expressions
+# ${{ github.sha }}
+# ${{ github.ref }}
+# ${{ github.event_name }}
+# ${{ github.actor }}
+# ${{ github.repository }}
+# ${{ runner.os }}
+# ${{ env.MY_VAR }}
+# ${{ secrets.MY_SECRET }}
+# ${{ vars.MY_VAR }}           # Repository variables
+# ${{ inputs.my_input }}
+# ${{ needs.build.outputs.version }}
+# ${{ matrix.node }}
+# ${{ steps.my-step.outputs.result }}
+
+# if conditions
+# if: github.event_name == 'push'
+# if: github.ref == 'refs/heads/main'
+# if: contains(github.ref, 'tags')
+# if: failure()
+# if: success()
+# if: always()
+# if: cancelled()
+# if: ${{ !cancelled() }}
+
+# concurrency
+# concurrency:
+#   group: ${{ github.workflow }}-${{ github.ref }}
+#   cancel-in-progress: true
+
+# permissions
+# permissions:
+#   contents: read
+#   packages: write
+#   id-token: write        # For OIDC
+#   pull-requests: write
+#   issues: write
+#   actions: read
+
+# defaults
+# defaults:
+#   run:
+#     shell: bash
+#     working-directory: ./src
+
+# Secrets & Variables
+# env:
+#   MY_SECRET: ${{ secrets.MY_SECRET }}   # Repo/org secret
+#   MY_VAR: ${{ vars.MY_VAR }}            # Repo/org variable
+#   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Auto-provided

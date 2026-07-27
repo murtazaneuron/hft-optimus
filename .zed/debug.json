@@ -1,0 +1,517 @@
+// hft-optimus – Zed debugger configurations
+//
+// Adapter:  CodeLLDB  (LLDB-based; best Rust support in Zed)
+// Docs:     https://zed.dev/docs/debugger
+//
+// Schema notes
+// ────────────
+// • `build`  – pre-launch shell task (supports `command`, `args`, `cwd`).
+//              It does NOT accept an `env` key; use a shell one-liner for
+//              env-gated build steps (see the CI docs check entry below).
+// • `env`    – environment variables injected into the LAUNCHED PROCESS.
+//              Must be at the top level of the config object, never inside
+//              `build`.  This is where SKIP_LLM=1 belongs for test configs.
+// • `sourceLanguages` – required by CodeLLDB for Rust; enables pretty-printers
+//              for std types (Vec, HashMap, Option, …).
+//
+// IMPORTANT – SKIP_LLM and test configs
+// ──────────────────────────────────────
+// The test debug configs below set `env: { "SKIP_LLM": "1" }` at the top
+// level so the PEV stub paths activate automatically.  The flag --skip-llm
+// belongs to the compiled binary's clap parser and must NEVER appear after --
+// in a cargo test invocation.
+//
+// Cargo test binary paths
+// ──────────────────────────────────────
+// `cargo test --no-run` produces a binary under target/debug/deps/ with a
+// hash suffix that changes on each recompile.  The helper script below each
+// test config resolves the current path automatically.  Alternatively, run
+// tests as tasks (tasks.json) and attach the debugger to the test process
+// after launch using "Attach to Process".
+[
+    // ══════════════════════════════════════════════════════════════════════════
+    // § MAIN BINARY – debug builds
+    // ══════════════════════════════════════════════════════════════════════════
+    {
+        "label": "debug · build & launch  [dev, --skip-llm]",
+        "adapter": "CodeLLDB",
+        "request": "launch",
+        "sourceLanguages": [
+            "rust"
+        ],
+        "build": {
+            "command": "cargo",
+            "args": [
+                "build"
+            ]
+        },
+        "program": "$ZED_WORKTREE_ROOT/target/debug/hft-optimus",
+        "args": [
+            "--mode",
+            "full",
+            "--skip-llm",
+            "--pair",
+            "SOL/USDC",
+            "--amount",
+            "1.0"
+        ],
+        "env": {
+            "RUST_LOG": "hft_optimus=debug",
+            "DRY_RUN": "true",
+            "SKIP_LLM": "1"
+        },
+        "cwd": "$ZED_WORKTREE_ROOT"
+    },
+    {
+        "label": "debug · PEV only  [dev, --skip-llm]",
+        "adapter": "CodeLLDB",
+        "request": "launch",
+        "sourceLanguages": [
+            "rust"
+        ],
+        "build": {
+            "command": "cargo",
+            "args": [
+                "build"
+            ]
+        },
+        "program": "$ZED_WORKTREE_ROOT/target/debug/hft-optimus",
+        "args": [
+            "--mode",
+            "pev",
+            "--skip-llm"
+        ],
+        "env": {
+            "RUST_LOG": "hft_optimus=debug",
+            "DRY_RUN": "true",
+            "SKIP_LLM": "1"
+        },
+        "cwd": "$ZED_WORKTREE_ROOT"
+    },
+    {
+        "label": "debug · SOR only  [dev]",
+        "adapter": "CodeLLDB",
+        "request": "launch",
+        "sourceLanguages": [
+            "rust"
+        ],
+        "build": {
+            "command": "cargo",
+            "args": [
+                "build"
+            ]
+        },
+        "program": "$ZED_WORKTREE_ROOT/target/debug/hft-optimus",
+        "args": [
+            "--mode",
+            "sor"
+        ],
+        "env": {
+            "RUST_LOG": "hft_optimus=debug",
+            "DRY_RUN": "true"
+        },
+        "cwd": "$ZED_WORKTREE_ROOT"
+    },
+    {
+        "label": "debug · SignerContext demo  [dev]",
+        "adapter": "CodeLLDB",
+        "request": "launch",
+        "sourceLanguages": [
+            "rust"
+        ],
+        "build": {
+            "command": "cargo",
+            "args": [
+                "build"
+            ]
+        },
+        "program": "$ZED_WORKTREE_ROOT/target/debug/hft-optimus",
+        "args": [
+            "--mode",
+            "signer"
+        ],
+        "env": {
+            "RUST_LOG": "hft_optimus=debug",
+            "DRY_RUN": "true"
+        },
+        "cwd": "$ZED_WORKTREE_ROOT"
+    },
+    {
+        "label": "debug · AVM Reactor benchmark  [dev]",
+        "adapter": "CodeLLDB",
+        "request": "launch",
+        "sourceLanguages": [
+            "rust"
+        ],
+        "build": {
+            "command": "cargo",
+            "args": [
+                "build"
+            ]
+        },
+        "program": "$ZED_WORKTREE_ROOT/target/debug/hft-optimus",
+        "args": [
+            "--mode",
+            "reactor"
+        ],
+        "env": {
+            "RUST_LOG": "hft_optimus=debug"
+        },
+        "cwd": "$ZED_WORKTREE_ROOT"
+    },
+    // ══════════════════════════════════════════════════════════════════════════
+    // § MAIN BINARY – release build (meaningful benchmark timing)
+    // ══════════════════════════════════════════════════════════════════════════
+    {
+        // Release binary with debuginfo stripped (Cargo.toml: strip = "debuginfo").
+        // Step-through debugging is limited; primarily useful for perf profiling
+        // and observing real-world latency of the AVM benchmark.
+        "label": "debug · release build & launch  [--skip-llm]",
+        "adapter": "CodeLLDB",
+        "request": "launch",
+        "sourceLanguages": [
+            "rust"
+        ],
+        "build": {
+            "command": "cargo",
+            "args": [
+                "build",
+                "--release"
+            ]
+        },
+        "program": "$ZED_WORKTREE_ROOT/target/release/hft-optimus",
+        "args": [
+            "--mode",
+            "full",
+            "--skip-llm",
+            "--pair",
+            "SOL/USDC",
+            "--amount",
+            "1.0"
+        ],
+        "env": {
+            "RUST_LOG": "hft_optimus=info",
+            "DRY_RUN": "true",
+            "SKIP_LLM": "1"
+        },
+        "cwd": "$ZED_WORKTREE_ROOT"
+    },
+    // ══════════════════════════════════════════════════════════════════════════
+    // § INTEGRATION TESTS
+    //
+    // Cargo produces test binaries in target/debug/deps/ with hash suffixes.
+    // The build step compiles the test binary (--no-run); the program field uses
+    // a glob-resolution shell expansion evaluated by CodeLLDB at launch time.
+    // If CodeLLDB cannot resolve the glob, run the corresponding task from
+    // tasks.json and use "Attach to Process" to connect the debugger instead.
+    // ══════════════════════════════════════════════════════════════════════════
+    {
+        "label": "debug · test_avm_benchmark  [SKIP_LLM=1]",
+        "adapter": "CodeLLDB",
+        "request": "launch",
+        "sourceLanguages": [
+            "rust"
+        ],
+        "build": {
+            "command": "cargo",
+            "args": [
+                "test",
+                "--no-run",
+                "--test",
+                "test_avm_benchmark"
+            ]
+        },
+        // CodeLLDB resolves the first binary matching this glob pattern.
+        "program": "$ZED_WORKTREE_ROOT/target/debug/deps/test_avm_benchmark-*",
+        "args": [
+            "--nocapture"
+        ],
+        "env": {
+            "RUST_LOG": "hft_optimus=debug",
+            "SKIP_LLM": "1"
+        },
+        "cwd": "$ZED_WORKTREE_ROOT"
+    },
+    {
+        "label": "debug · test_pev_loop  [SKIP_LLM=1]",
+        "adapter": "CodeLLDB",
+        "request": "launch",
+        "sourceLanguages": [
+            "rust"
+        ],
+        "build": {
+            "command": "cargo",
+            "args": [
+                "test",
+                "--no-run",
+                "--test",
+                "test_pev_loop"
+            ]
+        },
+        "program": "$ZED_WORKTREE_ROOT/target/debug/deps/test_pev_loop-*",
+        "args": [
+            "--nocapture"
+        ],
+        "env": {
+            "RUST_LOG": "hft_optimus=debug",
+            "SKIP_LLM": "1"
+        },
+        "cwd": "$ZED_WORKTREE_ROOT"
+    },
+    {
+        "label": "debug · test_signer_context  [SKIP_LLM=1]",
+        "adapter": "CodeLLDB",
+        "request": "launch",
+        "sourceLanguages": [
+            "rust"
+        ],
+        "build": {
+            "command": "cargo",
+            "args": [
+                "test",
+                "--no-run",
+                "--test",
+                "test_signer_context"
+            ]
+        },
+        "program": "$ZED_WORKTREE_ROOT/target/debug/deps/test_signer_context-*",
+        "args": [
+            "--nocapture"
+        ],
+        "env": {
+            "RUST_LOG": "hft_optimus=debug",
+            "SKIP_LLM": "1"
+        },
+        "cwd": "$ZED_WORKTREE_ROOT"
+    },
+    {
+        "label": "debug · test_sor  [SKIP_LLM=1]",
+        "adapter": "CodeLLDB",
+        "request": "launch",
+        "sourceLanguages": [
+            "rust"
+        ],
+        "build": {
+            "command": "cargo",
+            "args": [
+                "test",
+                "--no-run",
+                "--test",
+                "test_sor"
+            ]
+        },
+        "program": "$ZED_WORKTREE_ROOT/target/debug/deps/test_sor-*",
+        "args": [
+            "--nocapture"
+        ],
+        "env": {
+            "RUST_LOG": "hft_optimus=debug",
+            "SKIP_LLM": "1"
+        },
+        "cwd": "$ZED_WORKTREE_ROOT"
+    },
+    // ══════════════════════════════════════════════════════════════════════════
+    // § TOOLING / CI CHECKS  (build-only sessions; no interactive debug)
+    // ══════════════════════════════════════════════════════════════════════════
+    {
+        // Type-check all targets without linking; fastest feedback cycle.
+        "label": "check · type-check only (no link)",
+        "adapter": "CodeLLDB",
+        "request": "launch",
+        "sourceLanguages": [
+            "rust"
+        ],
+        "build": {
+            "command": "cargo",
+            "args": [
+                "check",
+                "--all-targets"
+            ]
+        },
+        // Dummy program – the build step is the goal; nothing is launched.
+        "program": "$ZED_WORKTREE_ROOT/target/debug/hft-optimus",
+        "cwd": "$ZED_WORKTREE_ROOT"
+    },
+    {
+        // Clippy in CI mode: zero warnings allowed.
+        "label": "check · clippy -D warnings",
+        "adapter": "CodeLLDB",
+        "request": "launch",
+        "sourceLanguages": [
+            "rust"
+        ],
+        "build": {
+            "command": "cargo",
+            "args": [
+                "clippy",
+                "--all-targets",
+                "--",
+                "-D",
+                "warnings"
+            ]
+        },
+        "program": "$ZED_WORKTREE_ROOT/target/debug/hft-optimus",
+        "cwd": "$ZED_WORKTREE_ROOT"
+    },
+    {
+        // Documentation build with the same flags as CI.
+        // RUSTDOCFLAGS cannot go inside `build` (schema limitation); the env key
+        // at the top level sets it for the cargo invocation via CodeLLDB's process
+        // environment forwarding.
+        "label": "check · doc CI gate  [RUSTDOCFLAGS=-D warnings]",
+        "adapter": "CodeLLDB",
+        "request": "launch",
+        "sourceLanguages": [
+            "rust"
+        ],
+        "build": {
+            "command": "cargo",
+            "args": [
+                "doc",
+                "--no-deps"
+            ]
+        },
+        "program": "$ZED_WORKTREE_ROOT/target/debug/hft-optimus",
+        "env": {
+            "RUSTDOCFLAGS": "--cfg docsrs -D warnings"
+        },
+        "cwd": "$ZED_WORKTREE_ROOT"
+    },
+    {
+        // Open rustdoc in the browser; includes private items.
+        "label": "doc · open (with private items)",
+        "adapter": "CodeLLDB",
+        "request": "launch",
+        "sourceLanguages": [
+            "rust"
+        ],
+        "build": {
+            "command": "cargo",
+            "args": [
+                "doc",
+                "--open",
+                "--document-private-items"
+            ]
+        },
+        "program": "$ZED_WORKTREE_ROOT/target/debug/hft-optimus",
+        "cwd": "$ZED_WORKTREE_ROOT"
+    },
+    {
+        // Full clean – removes the entire target/ directory.
+        // Useful before a fresh release build or when switching Rust toolchains.
+        "label": "build · cargo clean",
+        "adapter": "CodeLLDB",
+        "request": "launch",
+        "sourceLanguages": [
+            "rust"
+        ],
+        "build": {
+            "command": "cargo",
+            "args": [
+                "clean"
+            ]
+        },
+        "program": "$ZED_WORKTREE_ROOT/target/debug/hft-optimus",
+        "cwd": "$ZED_WORKTREE_ROOT"
+    },
+    // ══════════════════════════════════════════════════════════════════════════
+    // § COVERAGE  (cargo-llvm-cov – debug.json entries)
+    //
+    // These entries drive cargo-llvm-cov from the Zed Run & Debug panel.
+    // They do not attach an interactive debugger – the `build` step IS the
+    // meaningful work; the `program` field is a no-op placeholder required by
+    // the CodeLLDB schema.
+    //
+    // Every entry is self-bootstrapping: the install guard runs once and is a
+    // no-op when the binary already exists on PATH.
+    //
+    // Prefer the tasks.json "coverage · …" entries for everyday use; these
+    // debug.json entries exist so the same runs are reachable from the panel
+    // without switching to the Task runner.
+    // ══════════════════════════════════════════════════════════════════════════
+    {
+        // Full workspace: produces lcov.info + coverage-html/.
+        // Mirrors the CI coverage step so local numbers match Codecov.
+        // Self-bootstrapping: installs cargo-llvm-cov + llvm-tools-preview if absent.
+        "label": "coverage · workspace  [lcov + HTML, SKIP_LLM=1]",
+        "adapter": "CodeLLDB",
+        "request": "launch",
+        "sourceLanguages": [
+            "rust"
+        ],
+        "build": {
+            "command": "bash",
+            "args": [
+                "-c",
+                "cargo install cargo-llvm-cov --locked && rustup component add llvm-tools-preview && SKIP_LLM=1 cargo llvm-cov --workspace --lcov --output-path lcov.info --ignore-filename-regex 'tests/' && cargo llvm-cov report --html --output-dir coverage-html && echo 'Report → coverage-html/index.html'"
+            ]
+        },
+        "program": "$ZED_WORKTREE_ROOT/target/debug/hft-optimus",
+        "env": {
+            "SKIP_LLM": "1"
+        },
+        "cwd": "$ZED_WORKTREE_ROOT"
+    },
+    {
+        // Quick terminal summary – prints per-file % without writing files.
+        // Self-bootstrapping.
+        "label": "coverage · summary (terminal)  [SKIP_LLM=1]",
+        "adapter": "CodeLLDB",
+        "request": "launch",
+        "sourceLanguages": [
+            "rust"
+        ],
+        "build": {
+            "command": "bash",
+            "args": [
+                "-c",
+                "cargo install cargo-llvm-cov --locked && rustup component add llvm-tools-preview && SKIP_LLM=1 cargo llvm-cov --workspace --ignore-filename-regex 'tests/' --summary-only"
+            ]
+        },
+        "program": "$ZED_WORKTREE_ROOT/target/debug/hft-optimus",
+        "env": {
+            "SKIP_LLM": "1"
+        },
+        "cwd": "$ZED_WORKTREE_ROOT"
+    },
+    {
+        // Open the HTML report in the default browser after building it.
+        // Self-bootstrapping.
+        "label": "coverage · open HTML report  [SKIP_LLM=1]",
+        "adapter": "CodeLLDB",
+        "request": "launch",
+        "sourceLanguages": [
+            "rust"
+        ],
+        "build": {
+            "command": "bash",
+            "args": [
+                "-c",
+                "cargo install cargo-llvm-cov --locked && rustup component add llvm-tools-preview && SKIP_LLM=1 cargo llvm-cov --workspace --lcov --output-path lcov.info --ignore-filename-regex 'tests/' && cargo llvm-cov report --html --output-dir coverage-html && open coverage-html/index.html"
+            ]
+        },
+        "program": "$ZED_WORKTREE_ROOT/target/debug/hft-optimus",
+        "env": {
+            "SKIP_LLM": "1"
+        },
+        "cwd": "$ZED_WORKTREE_ROOT"
+    },
+    {
+        // Clean stale .profraw / .profdata artefacts left by cancelled runs.
+        "label": "coverage · clean profraw artefacts",
+        "adapter": "CodeLLDB",
+        "request": "launch",
+        "sourceLanguages": [
+            "rust"
+        ],
+        "build": {
+            "command": "bash",
+            "args": [
+                "-c",
+                "cargo llvm-cov clean --workspace && echo 'Profraw artefacts removed.'"
+            ]
+        },
+        "program": "$ZED_WORKTREE_ROOT/target/debug/hft-optimus",
+        "cwd": "$ZED_WORKTREE_ROOT"
+    }
+]

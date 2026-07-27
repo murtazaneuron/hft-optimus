@@ -1,0 +1,630 @@
+// hft-optimus – Zed task definitions
+//
+// IMPORTANT – env vars in test tasks
+// -----------------------------------
+// SKIP_LLM=1 is injected into every test task so the PEV stub paths activate
+// automatically with no API key present.
+// Do NOT pass --skip-llm after -- in any cargo test invocation.
+// The Rust test harness (getopts) rejects flags it doesn't own:
+//   error: Unrecognized option: 'skip-llm'
+// The SKIP_LLM env var is the only correct mechanism for test tasks.
+//
+// --skip-llm belongs exclusively to the compiled binary's clap parser and
+// appears only in "cargo run" tasks below (never in "cargo test" tasks).
+[
+    // ══════════════════════════════════════════════════════════════════════════
+    // § BUILD
+    // ══════════════════════════════════════════════════════════════════════════
+    {
+        "label": "build · dev",
+        "command": "cargo",
+        "args": [
+            "build"
+        ],
+        "env": {
+            "CARGO_INCREMENTAL": "1"
+        },
+        // Readable short-form used by Zed's task picker.
+        "tags": [
+            "build"
+        ]
+    },
+    {
+        "label": "build · release  [RUSTFLAGS=native]",
+        "command": "cargo",
+        "args": [
+            "build",
+            "--release"
+        ],
+        // CARGO_INCREMENTAL=0 required when LTO is enabled (Cargo.toml profile.release).
+        // target-cpu=native gives the same codegen flags that CI would use on the
+        // host machine; remove this if cross-compiling.
+        "env": {
+            "CARGO_INCREMENTAL": "0",
+            "RUSTFLAGS": "-C target-cpu=native"
+        },
+        "tags": [
+            "build"
+        ]
+    },
+    {
+        "label": "build · check (fast, all targets)",
+        "command": "cargo",
+        "args": [
+            "check",
+            "--all-targets"
+        ],
+        "tags": [
+            "build"
+        ]
+    },
+    {
+        "label": "build · clean",
+        "command": "cargo",
+        "args": [
+            "clean"
+        ],
+        "tags": [
+            "build"
+        ]
+    },
+    // ══════════════════════════════════════════════════════════════════════════
+    // § TEST
+    // ══════════════════════════════════════════════════════════════════════════
+    {
+        // All deterministic tests; no API key required.
+        "label": "test · all  [SKIP_LLM=1]",
+        "command": "cargo",
+        "args": [
+            "test",
+        ],
+        "env": {
+            "SKIP_LLM": "1"
+        },
+        "tags": [
+            "test"
+        ]
+    },
+    {
+        // All deterministic tests; no API key required.
+        "label": "test · all  [SKIP_LLM=1, 8 threads]",
+        "command": "cargo",
+        "args": [
+            "test",
+            "--",
+            "--test-threads=8"
+        ],
+        "env": {
+            "SKIP_LLM": "1"
+        },
+        "tags": [
+            "test"
+        ]
+    },
+    {
+        // Verbose output – pipe to a terminal so ANSI colours render.
+        "label": "test · all  [SKIP_LLM=1, nocapture, 1 thread]",
+        "command": "cargo",
+        "args": [
+            "test",
+            "--",
+            "--nocapture",
+            "--test-threads=1"
+        ],
+        "env": {
+            "SKIP_LLM": "1"
+        },
+        "tags": [
+            "test"
+        ]
+    },
+    {
+        // Library unit tests only (no integration tests, no examples).
+        "label": "test · lib only  [SKIP_LLM=1]",
+        "command": "cargo",
+        "args": [
+            "test",
+            "--lib"
+        ],
+        "env": {
+            "SKIP_LLM": "1"
+        },
+        "tags": [
+            "test"
+        ]
+    },
+    // ── Per-file integration tests ───────────────────────────────────────────
+    {
+        "label": "test · test_avm_benchmark  [SKIP_LLM=1]",
+        "command": "cargo",
+        "args": [
+            "test",
+            "--test",
+            "test_avm_benchmark"
+        ],
+        "env": {
+            "SKIP_LLM": "1"
+        },
+        "tags": [
+            "test"
+        ]
+    },
+    {
+        "label": "test · test_pev_loop  [SKIP_LLM=1]",
+        "command": "cargo",
+        "args": [
+            "test",
+            "--test",
+            "test_pev_loop"
+        ],
+        "env": {
+            "SKIP_LLM": "1"
+        },
+        "tags": [
+            "test"
+        ]
+    },
+    {
+        "label": "test · test_signer_context  [SKIP_LLM=1]",
+        "command": "cargo",
+        "args": [
+            "test",
+            "--test",
+            "test_signer_context"
+        ],
+        "env": {
+            "SKIP_LLM": "1"
+        },
+        "tags": [
+            "test"
+        ]
+    },
+    {
+        "label": "test · test_sor  [SKIP_LLM=1]",
+        "command": "cargo",
+        "args": [
+            "test",
+            "--test",
+            "test_sor"
+        ],
+        "env": {
+            "SKIP_LLM": "1"
+        },
+        "tags": [
+            "test"
+        ]
+    },
+    {
+        // Live provider tests – require ANTHROPIC_API_KEY; gated with #[ignore].
+        // --test-threads=1 avoids concurrent API calls hitting Anthropic rate limits.
+        "label": "test · providers (LIVE – needs ANTHROPIC_API_KEY)",
+        "command": "cargo",
+        "args": [
+            "test",
+            "--test",
+            "providers",
+            "--",
+            "--ignored",
+            "--test-threads=1"
+        ],
+        // No SKIP_LLM here – this task must use a real API key from the environment.
+        "tags": [
+            "test"
+        ]
+    },
+    // ══════════════════════════════════════════════════════════════════════════
+    // § LINT & FORMAT
+    // ══════════════════════════════════════════════════════════════════════════
+    {
+        // CI-grade: clippy must emit zero warnings.
+        "label": "lint · clippy -D warnings (all targets)",
+        "command": "cargo",
+        "args": [
+            "clippy",
+            "--all-targets",
+            "--",
+            "-D",
+            "warnings"
+        ],
+        "tags": [
+            "lint"
+        ]
+    },
+    {
+        // Clippy with auto-fix for machine-applicable suggestions.
+        "label": "lint · clippy --fix (all targets)",
+        "command": "cargo",
+        "args": [
+            "clippy",
+            "--all-targets",
+            "--fix",
+            "--allow-dirty",
+            "--",
+            "-D",
+            "warnings"
+        ],
+        "tags": [
+            "lint"
+        ]
+    },
+    {
+        // Clippy no lint warnings.
+        "label": "lint · clippy · no lint warnings (all targets)",
+        "command": "cargo",
+        "args": [
+            "clippy",
+            "--all-targets",
+        ],
+        "tags": [
+            "lint"
+        ]
+    },
+    {
+        // Apply rustfmt in-place (rustfmt.toml is picked up automatically).
+        "label": "fmt · apply (rustfmt.toml)",
+        "command": "cargo",
+        "args": [
+            "fmt",
+            "--all"
+        ],
+        "tags": [
+            "fmt"
+        ]
+    },
+    {
+        // CI format check – exits non-zero if any file needs formatting.
+        "label": "fmt · check only (CI)",
+        "command": "cargo",
+        "args": [
+            "fmt",
+            "--all",
+            "--",
+            "--check"
+        ],
+        "tags": [
+            "fmt"
+        ]
+    },
+    // ══════════════════════════════════════════════════════════════════════════
+    // § DOCS
+    // ══════════════════════════════════════════════════════════════════════════
+    {
+        // Open rustdoc in the browser; includes private items for dev browsing.
+        "label": "doc · open (with private items)",
+        "command": "cargo",
+        "args": [
+            "doc",
+            "--open",
+            "--document-private-items"
+        ],
+        "tags": [
+            "doc"
+        ]
+    },
+    {
+        // Exact replica of the CI docs gate (RUSTDOCFLAGS injected via env).
+        "label": "doc · CI check  [RUSTDOCFLAGS=-D warnings]",
+        "command": "cargo",
+        "args": [
+            "doc",
+            "--no-deps"
+        ],
+        "env": {
+            "RUSTDOCFLAGS": "--cfg docsrs -D warnings"
+        },
+        "tags": [
+            "doc"
+        ]
+    },
+    // ══════════════════════════════════════════════════════════════════════════
+    // § RUN – binary modes
+    //
+    // --skip-llm is a clap flag on the compiled binary; it belongs here and
+    // ONLY here (never in cargo test tasks – see the note at the top).
+    // ══════════════════════════════════════════════════════════════════════════
+    {
+        "label": "run · full pipeline  [--skip-llm, dry-run]",
+        "command": "cargo",
+        "args": [
+            "run",
+            "--release",
+            "--",
+            "--mode",
+            "full",
+            "--skip-llm",
+            "--pair",
+            "SOL/USDC",
+            "--amount",
+            "1.0"
+        ],
+        "env": {
+            "DRY_RUN": "true"
+        },
+        "tags": [
+            "run"
+        ]
+    },
+    {
+        "label": "run · full pipeline  [LIVE LLM, dry-run, needs ANTHROPIC_API_KEY]",
+        "command": "cargo",
+        "args": [
+            "run",
+            "--release",
+            "--",
+            "--mode",
+            "full",
+            "--pair",
+            "SOL/USDC",
+            "--amount",
+            "1.0"
+        ],
+        "env": {
+            "DRY_RUN": "true"
+        },
+        "tags": [
+            "run"
+        ]
+    },
+    {
+        "label": "run · PEV only  [--skip-llm]",
+        "command": "cargo",
+        "args": [
+            "run",
+            "--release",
+            "--",
+            "--mode",
+            "pev",
+            "--skip-llm"
+        ],
+        "tags": [
+            "run"
+        ]
+    },
+    {
+        "label": "run · SOR only  (no API key needed)",
+        "command": "cargo",
+        "args": [
+            "run",
+            "--release",
+            "--",
+            "--mode",
+            "sor"
+        ],
+        "tags": [
+            "run"
+        ]
+    },
+    {
+        "label": "run · SignerContext demo  (no API key needed)",
+        "command": "cargo",
+        "args": [
+            "run",
+            "--release",
+            "--",
+            "--mode",
+            "signer"
+        ],
+        "tags": [
+            "run"
+        ]
+    },
+    {
+        "label": "run · AVM Reactor benchmark  (no API key needed)",
+        "command": "cargo",
+        "args": [
+            "run",
+            "--release",
+            "--",
+            "--mode",
+            "reactor"
+        ],
+        "tags": [
+            "run"
+        ]
+    },
+    // ══════════════════════════════════════════════════════════════════════════
+    // § EXAMPLES
+    // ══════════════════════════════════════════════════════════════════════════
+    {
+        "label": "example · sor_demo  (no API key needed)",
+        "command": "cargo",
+        "args": [
+            "run",
+            "--release",
+            "--example",
+            "sor_demo"
+        ],
+        "tags": [
+            "run"
+        ]
+    },
+    {
+        "label": "example · signer_demo  (no API key needed)",
+        "command": "cargo",
+        "args": [
+            "run",
+            "--release",
+            "--example",
+            "signer_demo"
+        ],
+        "tags": [
+            "run"
+        ]
+    },
+    {
+        "label": "example · avm_demo  (--release for meaningful timing)",
+        "command": "cargo",
+        "args": [
+            "run",
+            "--release",
+            "--example",
+            "avm_demo"
+        ],
+        "tags": [
+            "run"
+        ]
+    },
+    {
+        "label": "example · jupiter_dry_run  (no API key needed)",
+        "command": "cargo",
+        "args": [
+            "run",
+            "--release",
+            "--example",
+            "jupiter_dry_run"
+        ],
+        "tags": [
+            "run"
+        ]
+    },
+    // ══════════════════════════════════════════════════════════════════════════
+    // § COVERAGE  (cargo-llvm-cov)
+    //
+    // Every task below is self-bootstrapping: the ENSURE_LLVM_COV guard runs
+    // once and is a no-op on subsequent calls (cargo install is idempotent
+    // when the binary already exists on PATH).
+    //
+    //   ENSURE_LLVM_COV:
+    //     cargo install cargo-llvm-cov --locked   (installs the subcommand)
+    //     rustup component add llvm-tools-preview  (installs the LLVM tooling)
+    //
+    // You can also run "coverage · install toolchain" once manually first.
+    //
+    // All coverage tasks inject SKIP_LLM=1 so the PEV stub paths activate
+    // without an API key (same reason as the test tasks above).
+    //
+    // Output locations
+    // ────────────────
+    // lcov.info        → editors (Coverage Gutters / cov-lens) + Codecov CI
+    // coverage-html/   → human-readable HTML; open coverage-html/index.html
+    // ══════════════════════════════════════════════════════════════════════════
+    // Shared bootstrap snippet referenced in the comment above each task.
+    // Inline it as a leading shell fragment so every task is self-contained.
+    // ENSURE_LLVM_COV expands to:
+    //   cargo install cargo-llvm-cov --locked && rustup component add llvm-tools-preview
+    {
+        // Run this once on a fresh machine / new checkout.
+        // All other coverage tasks call the same install guard automatically,
+        // but running this first gives cleaner terminal output.
+        "label": "coverage · install toolchain  (cargo-llvm-cov + llvm-tools-preview)",
+        "command": "bash",
+        "args": [
+            "-c",
+            "cargo install cargo-llvm-cov --locked && rustup component add llvm-tools-preview && echo 'cargo-llvm-cov ready.'"
+        ],
+        "tags": [
+            "coverage"
+        ]
+    },
+    {
+        // Full workspace coverage → lcov + HTML.  Mirrors the CI coverage step
+        // exactly so local numbers match what Codecov receives.
+        // Self-bootstrapping: installs cargo-llvm-cov + llvm-tools-preview if absent.
+        "label": "coverage · workspace  [lcov + HTML, SKIP_LLM=1]",
+        "command": "bash",
+        "args": [
+            "-c",
+            "cargo install cargo-llvm-cov --locked && rustup component add llvm-tools-preview && cargo llvm-cov --workspace --lcov --output-path lcov.info --ignore-filename-regex 'tests/' && cargo llvm-cov report --html --output-dir coverage-html && echo 'Report → coverage-html/index.html'"
+        ],
+        "env": {
+            "SKIP_LLM": "1"
+        },
+        "tags": [
+            "coverage"
+        ]
+    },
+    {
+        // Quick terminal summary – prints per-file % to stdout without writing
+        // any files.  Fastest feedback loop after editing a module.
+        "label": "coverage · summary (terminal only)  [SKIP_LLM=1]",
+        "command": "bash",
+        "args": [
+            "-c",
+            "cargo install cargo-llvm-cov --locked && rustup component add llvm-tools-preview && cargo llvm-cov --workspace --ignore-filename-regex 'tests/' --summary-only"
+        ],
+        "env": {
+            "SKIP_LLM": "1"
+        },
+        "tags": [
+            "coverage"
+        ]
+    },
+    {
+        // Emit lcov.info only (no HTML build).  Use this when you only need
+        // the data file – e.g. to feed a Coverage Gutters extension or to
+        // upload to Codecov manually.
+        "label": "coverage · lcov only  [SKIP_LLM=1]",
+        "command": "bash",
+        "args": [
+            "-c",
+            "cargo install cargo-llvm-cov --locked && rustup component add llvm-tools-preview && cargo llvm-cov --workspace --lcov --output-path lcov.info --ignore-filename-regex 'tests/'"
+        ],
+        "env": {
+            "SKIP_LLM": "1"
+        },
+        "tags": [
+            "coverage"
+        ]
+    },
+    {
+        // Open the HTML report in the default browser immediately after building.
+        "label": "coverage · open HTML report  [SKIP_LLM=1]",
+        "command": "bash",
+        "args": [
+            "-c",
+            "cargo install cargo-llvm-cov --locked && rustup component add llvm-tools-preview && cargo llvm-cov --workspace --lcov --output-path lcov.info --ignore-filename-regex 'tests/' && cargo llvm-cov report --html --output-dir coverage-html && open coverage-html/index.html"
+        ],
+        "env": {
+            "SKIP_LLM": "1"
+        },
+        "tags": [
+            "coverage"
+        ]
+    },
+    {
+        // Library crate only (src/lib.rs tree); skips integration tests for
+        // faster iteration when working on internal unit tests.
+        "label": "coverage · lib only  [SKIP_LLM=1]",
+        "command": "bash",
+        "args": [
+            "-c",
+            "cargo install cargo-llvm-cov --locked && rustup component add llvm-tools-preview && cargo llvm-cov --lib --lcov --output-path lcov.info --ignore-filename-regex 'tests/' --summary-only"
+        ],
+        "env": {
+            "SKIP_LLM": "1"
+        },
+        "tags": [
+            "coverage"
+        ]
+    },
+    {
+        // Clean stale .profraw / .profdata artefacts left by cancelled runs.
+        // Run this if coverage numbers look wrong or the tool complains about
+        // stale instrumentation data.
+        "label": "coverage · clean profraw artefacts",
+        "command": "bash",
+        "args": [
+            "-c",
+            "cargo llvm-cov clean --workspace && echo 'Profraw artefacts removed.'"
+        ],
+        "tags": [
+            "coverage"
+        ]
+    },
+    // ══════════════════════════════════════════════════════════════════════════
+    // § CI – full local simulation (mirrors .github/workflows/ci.yml order)
+    // ══════════════════════════════════════════════════════════════════════════
+    {
+        // Runs all CI gates sequentially so the first failure is immediately
+        // obvious.  Equivalent to pushing to main without waiting for GitHub.
+        "label": "CI · full local simulation (fmt → clippy → build → test → coverage → doc)",
+        "command": "bash",
+        "args": [
+            "-c",
+            "set -e && cargo fmt --all -- --check && cargo clippy --all-targets -- -D warnings && cargo build --release && SKIP_LLM=1 cargo test && cargo install cargo-llvm-cov --locked && rustup component add llvm-tools-preview && SKIP_LLM=1 cargo llvm-cov --workspace --lcov --output-path lcov.info --ignore-filename-regex 'tests/' && cargo llvm-cov report --html --output-dir coverage-html && RUSTDOCFLAGS='--cfg docsrs -D warnings' cargo doc --no-deps"
+        ],
+        "tags": [
+            "ci"
+        ]
+    },
+]

@@ -1,0 +1,291 @@
+// hft-optimus – Zed project-local settings
+//
+// Mirrors the project's rustfmt.toml (.clippy.toml) and Cargo.toml lint table
+// so every Zed session automatically applies the same style and analysis
+// thresholds enforced in CI.
+//
+// Docs: https://zed.dev/docs/configuring-zed
+{
+    // ── Editor ────────────────────────────────────────────────────────────────
+    // Match rustfmt.toml: tab_spaces = 4, hard_tabs = false, max_width = 100
+    "tab_size": 4,
+    "hard_tabs": false,
+    "preferred_line_length": 100,
+    "soft_wrap": "prefer_line",
+    "show_whitespaces": "boundary",
+    "indent_guides": {
+        "enabled": true,
+        "coloring": "indent_aware"
+    },
+    // ── Formatting ───────────────────────────────────────────────────────────
+    // Use rust-analyzer's built-in rustfmt bridge so rustfmt.toml is respected.
+    "formatter": "language_server",
+    "format_on_save": "on",
+    // ── Inlay hints ──────────────────────────────────────────────────────────
+    "inlay_hints": {
+        "enabled": true,
+        "show_type_hints": true,
+        "show_parameter_hints": true,
+        "show_other_hints": true,
+        "edit_debounce_ms": 700,
+        "scroll_debounce_ms": 50
+    },
+    // ── Per-language overrides ────────────────────────────────────────────────
+    "languages": {
+        "Rust": {
+            "tab_size": 4,
+            "hard_tabs": false,
+            "preferred_line_length": 100,
+            "soft_wrap": "prefer_line",
+            "formatter": "language_server",
+            "format_on_save": "on",
+            // Show trailing whitespace so accidental spaces after semicolons are
+            // visible before commit.
+            "show_whitespaces": "trailing"
+        },
+        "TOML": {
+            "tab_size": 4,
+            "hard_tabs": false,
+            "preferred_line_length": 100
+        },
+        "Markdown": {
+            "preferred_line_length": 100,
+            "soft_wrap": "prefer_line",
+            "format_on_save": "off"
+        }
+    },
+    // ── Language server (rust-analyzer) ─────────────────────────────────────
+    //
+    // initialization_options maps directly to the rust-analyzer JSON config.
+    // The settings below are chosen to match:
+    //   • rustfmt.toml     (edition 2024, 100-col, crate-level import grouping)
+    //   • .clippy.toml     (MSRV 1.97.1, cognitive-complexity 30, pedantic)
+    //   • Cargo.toml       ([lints] table: pedantic = warn; MSRV 1.97.1)
+    "lsp": {
+        "rust-analyzer": {
+            "initialization_options": {
+                // ── On-save check ───────────────────────────────────────────────
+                // Run clippy (not cargo check) on save so inline diagnostics match CI.
+                // Mirrors: cargo clippy --all-targets -- -D warnings
+                "check": {
+                    "command": "clippy",
+                    "extraArgs": [
+                        "--",
+                        // Activate the same lint groups enforced in Cargo.toml [lints.clippy]
+                        "-W",
+                        "clippy::all",
+                        "-W",
+                        "clippy::pedantic",
+                        // Allow the same false-positive exemptions as Cargo.toml
+                        "-A",
+                        "clippy::module_name_repetitions",
+                        "-A",
+                        "clippy::must_use_candidate",
+                        "-A",
+                        "clippy::missing_errors_doc"
+                    ]
+                },
+                // ── Cargo features & target ─────────────────────────────────────
+                "cargo": {
+                    // Build all targets so test / example diagnostics appear inline.
+                    "buildScripts": {
+                        "enable": true
+                    },
+                    "features": "all",
+                    // Target the host triple – avoids spurious cross-compile errors.
+                    "target": null
+                },
+                // ── Proc-macros ─────────────────────────────────────────────────
+                // Required for tokio::main, derive macros, and clap derive.
+                "procMacro": {
+                    "enable": true,
+                    "ignored": {
+                        // Suppress benign attribute-macro expansion noise.
+                        "tokio": [
+                            "main",
+                            "test"
+                        ]
+                    }
+                },
+                // ── Import organisation ─────────────────────────────────────────
+                // Must match rustfmt.toml:
+                //   imports_granularity = "Crate"
+                //   group_imports       = "StdExternalCrate"
+                "imports": {
+                    "granularity": {
+                        "group": "crate"
+                    },
+                    "group": {
+                        "enable": true
+                    },
+                    "prefix": "plain"
+                },
+                // ── rustfmt bridge ──────────────────────────────────────────────
+                // Let rust-analyzer invoke rustfmt with the project's rustfmt.toml.
+                "rustfmt": {
+                    "rangeFormatting": {
+                        "enable": true
+                    }
+                },
+                // ── Diagnostics ─────────────────────────────────────────────────
+                "diagnostics": {
+                    "enable": true,
+                    // Surface experimental diagnostics (e.g. `incorrect_ident_case`).
+                    "experimental": {
+                        "enable": true
+                    },
+                    // Silence noisy std-library hints inside vendor paths.
+                    "disabled": [
+                        "unresolved-proc-macro"
+                    ]
+                },
+                // ── Inlay hints ─────────────────────────────────────────────────
+                // Mirror the editor-level inlay_hints block but drive the RA side.
+                "inlayHints": {
+                    "bindingModeHints": {
+                        "enable": true
+                    },
+                    "chainingHints": {
+                        "enable": true
+                    },
+                    "closingBraceHints": {
+                        "enable": true,
+                        "minLines": 15
+                    },
+                    "closureReturnTypeHints": {
+                        "enable": "with_block"
+                    },
+                    "discriminantHints": {
+                        "enable": "fieldless"
+                    },
+                    "expressionAdjustmentHints": {
+                        "enable": "reborrow"
+                    },
+                    "lifetimeElisionHints": {
+                        "enable": "skip_trivial",
+                        "useParameterNames": true
+                    },
+                    "parameterHints": {
+                        "enable": true
+                    },
+                    "rangeExclusiveHints": {
+                        "enable": true
+                    },
+                    "reborrowHints": {
+                        "enable": "mutable"
+                    },
+                    "renderColons": true,
+                    "typeHints": {
+                        "enable": true,
+                        "hideClosureInitialization": false,
+                        "hideNamedConstructor": false
+                    }
+                },
+                // ── Hover ────────────────────────────────────────────────────────
+                "hover": {
+                    "actions": {
+                        "enable": true,
+                        "implementations": {
+                            "enable": true
+                        },
+                        "references": {
+                            "enable": true
+                        },
+                        "run": {
+                            "enable": true
+                        }
+                    },
+                    "documentation": {
+                        "enable": true,
+                        "keywords": {
+                            "enable": true
+                        }
+                    },
+                    "links": {
+                        "enable": true
+                    }
+                },
+                // ── Completion ───────────────────────────────────────────────────
+                "completion": {
+                    "autoimport": {
+                        "enable": true
+                    },
+                    "autoself": {
+                        "enable": true
+                    },
+                    "callable": {
+                        "snippets": "fill_arguments"
+                    },
+                    "fullFunctionSignatures": {
+                        "enable": true
+                    },
+                    "postfix": {
+                        "enable": true
+                    },
+                    "privateEditable": {
+                        "enable": true
+                    }
+                },
+                // ── Semantic tokens ──────────────────────────────────────────────
+                // Enable so unsafe blocks and lifetime annotations are highlighted.
+                "semanticHighlighting": {
+                    "strings": {
+                        "enable": true
+                    },
+                    "operator": {
+                        "specialization": {
+                            "enable": true
+                        }
+                    },
+                    "punctuation": {
+                        "enable": true,
+                        "separate": {
+                            "macro": {
+                                "bang": true
+                            }
+                        },
+                        "specialization": {
+                            "enable": true
+                        }
+                    }
+                },
+                // ── Lens (code lenses) ───────────────────────────────────────────
+                "lens": {
+                    "enable": true,
+                    "debug": {
+                        "enable": true
+                    },
+                    "implementations": {
+                        "enable": true
+                    },
+                    "references": {
+                        "adt": {
+                            "enable": true
+                        },
+                        "enumVariant": {
+                            "enable": true
+                        },
+                        "method": {
+                            "enable": true
+                        },
+                        "trait": {
+                            "enable": true
+                        }
+                    },
+                    "run": {
+                        "enable": true
+                    }
+                },
+                // ── Workspace symbol search ──────────────────────────────────────
+                "workspace": {
+                    "symbol": {
+                        "search": {
+                            "kind": "all_symbols",
+                            "scope": "workspace_and_dependencies"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
