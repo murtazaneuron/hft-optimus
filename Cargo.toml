@@ -1,9 +1,9 @@
 [package]
 name = "hft-optimus"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2024"
 rust-version = "1.97.1"
-authors = ["Murtaza Ali Imtiaz <very.kool.king@gmail.com>"]
+authors = ["Murtaza Ali Imtiaz <murtazaneuron@gmail.com>"]
 description = "LLM-driven high-frequency trading platform on Solana - PEV loop, Smart Order Routing, SignerContext keypair isolation, and AVM benchmarking via Rig (ARC)"
 repository = "https://github.com/murtazaneuron/hft-optimus"
 homepage = "https://www.murtazai.com"
