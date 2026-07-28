@@ -264,6 +264,7 @@
         "label": "fmt · apply (rustfmt.toml)",
         "command": "cargo",
         "args": [
+            "+nightly",
             "fmt",
             "--all"
         ],
@@ -627,4 +628,35 @@
             "ci"
         ]
     },
+    {
+        "label": "cargo · publish (dry-run)",
+        // "type": "shell",
+        "command": "cargo",
+        "args": [
+            "publish",
+            "--dry-run"
+        ],
+        "tags": [
+            "cargo",
+            "publish"
+        ],
+        // "problemMatcher": [
+        //     "$rustc"
+        // ]
+    },
+    {
+        "label": "cargo · publish",
+        // "type": "shell",
+        "command": "cargo",
+        "args": [
+            "publish"
+        ],
+        "tags": [
+            "cargo",
+            "publish"
+        ],
+        // "problemMatcher": [
+        //     "$rustc"
+        // ]
+    }
 ]
