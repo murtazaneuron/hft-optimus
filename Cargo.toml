@@ -1,6 +1,6 @@
 [package]
 name = "hft-optimus"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2024"
 rust-version = "1.97.1"
 authors = ["Murtaza Ali Imtiaz <very.kool.king@gmail.com>"]
