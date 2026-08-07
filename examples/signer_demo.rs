@@ -11,7 +11,7 @@
 //! No `ANTHROPIC_API_KEY` is required; no on-chain call is made.
 
 use anyhow::Result;
-use hft_optimus::config::Config;
+use hft_core::config::Config;
 use tracing_subscriber::EnvFilter;
 
 #[tokio::main]
@@ -19,7 +19,7 @@ async fn main() -> Result<()> {
     dotenvy::dotenv().ok();
 
     tracing_subscriber::fmt()
-        .with_env_filter(EnvFilter::new("hft_optimus=debug"))
+        .with_env_filter(EnvFilter::new("hft_core=debug"))
         .init();
 
     // Config::from_env() no longer requires ANTHROPIC_API_KEY.
@@ -27,7 +27,7 @@ async fn main() -> Result<()> {
     // LLM-free paths (including the signer demo) work without any special setup.
     let cfg = Config::from_env()?;
 
-    hft_optimus::onchain::demo_signer(&cfg).await?;
+    hft_core::onchain::demo_signer(&cfg).await?;
     println!("SignerContext isolation demo complete.");
     Ok(())
 }

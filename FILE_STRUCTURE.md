@@ -1,7 +1,7 @@
 # Repository File Structure
 
 ```
-hft-optimus/
+hft-core/
 │
 │  ── Root tooling & meta ────────────────────────────────────────────
 ├── Cargo.toml             Rust 2024 edition; all dependencies; lint table
@@ -89,7 +89,7 @@ hft-optimus/
 
 | Decision | Rationale |
 |---|---|
-| Lib + bin targets | Integration tests are external crates; lib exposes `hft_optimus::` |
+| Lib + bin targets | Integration tests are external crates; lib exposes `hft_core::` |
 | Rust 2024 edition | Matches the rig upstream repository |
 | `CompletionClient`| Both required by rig-core ≥ 0.36 for `.agent()` |
 | `Client::new(...)? ` not `Arc::new(Client::new(...))` | `Client::new` is fallible in 0.36+ |

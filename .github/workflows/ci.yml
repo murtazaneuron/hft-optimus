@@ -29,7 +29,7 @@ env: # Global env vars
     CARGO_TERM_COLOR: always
     CARGO_INCREMENTAL: 0 # disable incremental; full clean builds on CI
     RUST_BACKTRACE: short
-    RUST_LOG: hft_optimus=debug
+    RUST_LOG: hft_core=debug
 
 # Cancel in-flight runs for the same branch on new push
 concurrency: # Concurrency control

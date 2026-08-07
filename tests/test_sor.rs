@@ -1,12 +1,12 @@
 //! Integration tests for Smart Order Routing.
 //!
-//! Verifies that [`hft_optimus::sor::best_route`] returns a valid venue,
+//! Verifies that [`hft_core::sor::best_route`] returns a valid venue,
 //! that the cost-ordering logic selects the cheapest option, and that wall-clock
 //! latency is measured.
 //!
 //! None of these tests require `ANTHROPIC_API_KEY`.
 
-use hft_optimus::sor::router::Route;
+use hft_core::sor::router::Route;
 
 // ── helper ────────────────────────────────────────────────────────────────────
 
@@ -27,7 +27,7 @@ fn make_route(venue: &str, price: f64, fee_bps: u16) -> Route {
 /// This test does NOT require `ANTHROPIC_API_KEY`.
 #[tokio::test]
 async fn test_best_route_returns_known_venue() {
-    let route = hft_optimus::sor::best_route("SOL/USDC", 1.0).await.unwrap();
+    let route = hft_core::sor::best_route("SOL/USDC", 1.0).await.unwrap();
     assert!(
         ["Raydium", "Orca", "Serum"].contains(&route.venue.as_str()),
         "unexpected venue: {}",
@@ -40,7 +40,7 @@ async fn test_best_route_returns_known_venue() {
 /// `best_route` must record a non-zero latency.
 #[tokio::test]
 async fn test_sor_latency_recorded() {
-    let route = hft_optimus::sor::best_route("SOL/USDC", 1.0).await.unwrap();
+    let route = hft_core::sor::best_route("SOL/USDC", 1.0).await.unwrap();
     assert!(
         route.latency_ms > 0,
         "latency must be measured and non-zero"

@@ -73,7 +73,7 @@ impl Config {
     /// # Examples
     ///
     /// ```rust
-    /// use hft_optimus::config::Config;
+    /// use hft_core::config::Config;
     ///
     /// let cfg = Config::from_env().unwrap();
     /// // Works even without ANTHROPIC_API_KEY in the environment.

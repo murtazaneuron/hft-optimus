@@ -1,4 +1,4 @@
-// hft-optimus – Zed debugger configurations
+// hft-core – Zed debugger configurations
 //
 // Adapter:  CodeLLDB  (LLDB-based; best Rust support in Zed)
 // Docs:     https://zed.dev/docs/debugger
@@ -45,7 +45,7 @@
                 "build"
             ]
         },
-        "program": "$ZED_WORKTREE_ROOT/target/debug/hft-optimus",
+        "program": "$ZED_WORKTREE_ROOT/target/debug/hft-core",
         "args": [
             "--mode",
             "full",
@@ -56,7 +56,7 @@
             "1.0"
         ],
         "env": {
-            "RUST_LOG": "hft_optimus=debug",
+            "RUST_LOG": "hft_core=debug",
             "DRY_RUN": "true",
             "SKIP_LLM": "1"
         },
@@ -75,14 +75,14 @@
                 "build"
             ]
         },
-        "program": "$ZED_WORKTREE_ROOT/target/debug/hft-optimus",
+        "program": "$ZED_WORKTREE_ROOT/target/debug/hft-core",
         "args": [
             "--mode",
             "pev",
             "--skip-llm"
         ],
         "env": {
-            "RUST_LOG": "hft_optimus=debug",
+            "RUST_LOG": "hft_core=debug",
             "DRY_RUN": "true",
             "SKIP_LLM": "1"
         },
@@ -101,13 +101,13 @@
                 "build"
             ]
         },
-        "program": "$ZED_WORKTREE_ROOT/target/debug/hft-optimus",
+        "program": "$ZED_WORKTREE_ROOT/target/debug/hft-core",
         "args": [
             "--mode",
             "sor"
         ],
         "env": {
-            "RUST_LOG": "hft_optimus=debug",
+            "RUST_LOG": "hft_core=debug",
             "DRY_RUN": "true"
         },
         "cwd": "$ZED_WORKTREE_ROOT"
@@ -125,13 +125,13 @@
                 "build"
             ]
         },
-        "program": "$ZED_WORKTREE_ROOT/target/debug/hft-optimus",
+        "program": "$ZED_WORKTREE_ROOT/target/debug/hft-core",
         "args": [
             "--mode",
             "signer"
         ],
         "env": {
-            "RUST_LOG": "hft_optimus=debug",
+            "RUST_LOG": "hft_core=debug",
             "DRY_RUN": "true"
         },
         "cwd": "$ZED_WORKTREE_ROOT"
@@ -149,13 +149,13 @@
                 "build"
             ]
         },
-        "program": "$ZED_WORKTREE_ROOT/target/debug/hft-optimus",
+        "program": "$ZED_WORKTREE_ROOT/target/debug/hft-core",
         "args": [
             "--mode",
             "reactor"
         ],
         "env": {
-            "RUST_LOG": "hft_optimus=debug"
+            "RUST_LOG": "hft_core=debug"
         },
         "cwd": "$ZED_WORKTREE_ROOT"
     },
@@ -179,7 +179,7 @@
                 "--release"
             ]
         },
-        "program": "$ZED_WORKTREE_ROOT/target/release/hft-optimus",
+        "program": "$ZED_WORKTREE_ROOT/target/release/hft-core",
         "args": [
             "--mode",
             "full",
@@ -190,7 +190,7 @@
             "1.0"
         ],
         "env": {
-            "RUST_LOG": "hft_optimus=info",
+            "RUST_LOG": "hft_core=info",
             "DRY_RUN": "true",
             "SKIP_LLM": "1"
         },
@@ -227,7 +227,7 @@
             "--nocapture"
         ],
         "env": {
-            "RUST_LOG": "hft_optimus=debug",
+            "RUST_LOG": "hft_core=debug",
             "SKIP_LLM": "1"
         },
         "cwd": "$ZED_WORKTREE_ROOT"
@@ -253,7 +253,7 @@
             "--nocapture"
         ],
         "env": {
-            "RUST_LOG": "hft_optimus=debug",
+            "RUST_LOG": "hft_core=debug",
             "SKIP_LLM": "1"
         },
         "cwd": "$ZED_WORKTREE_ROOT"
@@ -279,7 +279,7 @@
             "--nocapture"
         ],
         "env": {
-            "RUST_LOG": "hft_optimus=debug",
+            "RUST_LOG": "hft_core=debug",
             "SKIP_LLM": "1"
         },
         "cwd": "$ZED_WORKTREE_ROOT"
@@ -305,7 +305,7 @@
             "--nocapture"
         ],
         "env": {
-            "RUST_LOG": "hft_optimus=debug",
+            "RUST_LOG": "hft_core=debug",
             "SKIP_LLM": "1"
         },
         "cwd": "$ZED_WORKTREE_ROOT"
@@ -329,7 +329,7 @@
             ]
         },
         // Dummy program – the build step is the goal; nothing is launched.
-        "program": "$ZED_WORKTREE_ROOT/target/debug/hft-optimus",
+        "program": "$ZED_WORKTREE_ROOT/target/debug/hft-core",
         "cwd": "$ZED_WORKTREE_ROOT"
     },
     {
@@ -350,7 +350,7 @@
                 "warnings"
             ]
         },
-        "program": "$ZED_WORKTREE_ROOT/target/debug/hft-optimus",
+        "program": "$ZED_WORKTREE_ROOT/target/debug/hft-core",
         "cwd": "$ZED_WORKTREE_ROOT"
     },
     {
@@ -371,7 +371,7 @@
                 "--no-deps"
             ]
         },
-        "program": "$ZED_WORKTREE_ROOT/target/debug/hft-optimus",
+        "program": "$ZED_WORKTREE_ROOT/target/debug/hft-core",
         "env": {
             "RUSTDOCFLAGS": "--cfg docsrs -D warnings"
         },
@@ -393,7 +393,7 @@
                 "--document-private-items"
             ]
         },
-        "program": "$ZED_WORKTREE_ROOT/target/debug/hft-optimus",
+        "program": "$ZED_WORKTREE_ROOT/target/debug/hft-core",
         "cwd": "$ZED_WORKTREE_ROOT"
     },
     {
@@ -411,7 +411,7 @@
                 "clean"
             ]
         },
-        "program": "$ZED_WORKTREE_ROOT/target/debug/hft-optimus",
+        "program": "$ZED_WORKTREE_ROOT/target/debug/hft-core",
         "cwd": "$ZED_WORKTREE_ROOT"
     },
     // ══════════════════════════════════════════════════════════════════════════
@@ -446,7 +446,7 @@
                 "cargo install cargo-llvm-cov --locked && rustup component add llvm-tools-preview && SKIP_LLM=1 cargo llvm-cov --workspace --lcov --output-path lcov.info --ignore-filename-regex 'tests/' && cargo llvm-cov report --html --output-dir coverage-html && echo 'Report → coverage-html/index.html'"
             ]
         },
-        "program": "$ZED_WORKTREE_ROOT/target/debug/hft-optimus",
+        "program": "$ZED_WORKTREE_ROOT/target/debug/hft-core",
         "env": {
             "SKIP_LLM": "1"
         },
@@ -468,7 +468,7 @@
                 "cargo install cargo-llvm-cov --locked && rustup component add llvm-tools-preview && SKIP_LLM=1 cargo llvm-cov --workspace --ignore-filename-regex 'tests/' --summary-only"
             ]
         },
-        "program": "$ZED_WORKTREE_ROOT/target/debug/hft-optimus",
+        "program": "$ZED_WORKTREE_ROOT/target/debug/hft-core",
         "env": {
             "SKIP_LLM": "1"
         },
@@ -490,7 +490,7 @@
                 "cargo install cargo-llvm-cov --locked && rustup component add llvm-tools-preview && SKIP_LLM=1 cargo llvm-cov --workspace --lcov --output-path lcov.info --ignore-filename-regex 'tests/' && cargo llvm-cov report --html --output-dir coverage-html && open coverage-html/index.html"
             ]
         },
-        "program": "$ZED_WORKTREE_ROOT/target/debug/hft-optimus",
+        "program": "$ZED_WORKTREE_ROOT/target/debug/hft-core",
         "env": {
             "SKIP_LLM": "1"
         },
@@ -511,7 +511,7 @@
                 "cargo llvm-cov clean --workspace && echo 'Profraw artefacts removed.'"
             ]
         },
-        "program": "$ZED_WORKTREE_ROOT/target/debug/hft-optimus",
+        "program": "$ZED_WORKTREE_ROOT/target/debug/hft-core",
         "cwd": "$ZED_WORKTREE_ROOT"
     }
 ]

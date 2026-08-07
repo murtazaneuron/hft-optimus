@@ -1,11 +1,11 @@
-//! Integration tests for [`hft_optimus::onchain::signer`].
+//! Integration tests for [`hft_core::onchain::signer`].
 //!
-//! Verifies that [`with_signer`][hft_optimus::onchain::signer::with_signer]
+//! Verifies that [`with_signer`][hft_core::onchain::signer::with_signer]
 //! provides task-local isolation across concurrent Tokio tasks, and that
-//! `simulate_swap`,`hft_optimus::onchain::jupiter::simulate_swap`]
+//! `simulate_swap`,`hft_core::onchain::jupiter::simulate_swap`]
 //! returns a properly formed dry-run result.
 
-use hft_optimus::{
+use hft_core::{
     onchain::{
         jupiter,
         signer::{LocalSolanaSigner, with_signer},

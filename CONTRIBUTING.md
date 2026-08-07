@@ -1,4 +1,4 @@
-# Contributing to hft-optimus
+# Contributing to hft-core
 
 > **mAI (🧠)** · Technology Lead: Murtaza Ali Imtiaz
 >
@@ -22,8 +22,8 @@
 ### Setup
 
 ```bash
-    git clone https://github.com/murtazaneuron/hft-optimus
-cd hft-optimus
+    git clone https://github.com/murtazaneuron/hft-core
+cd hft-core
 cp .env.example .env
 # Edit .env: optionally set ANTHROPIC_API_KEY=sk-ant-...
 ```

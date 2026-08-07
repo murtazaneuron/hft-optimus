@@ -17,10 +17,10 @@ use tracing_subscriber::EnvFilter;
 
 fn main() -> Result<()> {
     tracing_subscriber::fmt()
-        .with_env_filter(EnvFilter::new("hft_optimus=info"))
+        .with_env_filter(EnvFilter::new("hft_core=info"))
         .init();
 
-    hft_optimus::avm::run_benchmark()?;
+    hft_core::avm::run_benchmark()?;
     println!("AVM benchmark demo complete.");
     Ok(())
 }

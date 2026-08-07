@@ -11,13 +11,13 @@
 //! No `ANTHROPIC_API_KEY` is required; no on-chain call is made.
 
 use anyhow::Result;
-use hft_optimus::sor::router::Route;
+use hft_core::sor::router::Route;
 use tracing_subscriber::EnvFilter;
 
 #[tokio::main]
 async fn main() -> Result<()> {
     tracing_subscriber::fmt()
-        .with_env_filter(EnvFilter::new("hft_optimus=info"))
+        .with_env_filter(EnvFilter::new("hft_core=info"))
         .init();
 
     let route = Route {
@@ -28,7 +28,7 @@ async fn main() -> Result<()> {
         latency_ms: 9,
     };
 
-    let swap = hft_optimus::onchain::jupiter::simulate_swap(&route, 1.0, true).await?;
+    let swap = hft_core::onchain::jupiter::simulate_swap(&route, 1.0, true).await?;
 
     println!("┌──────────────────────────────────────────┐");
     println!("│  Jupiter Dry-Run Result                  │");
@@ -47,7 +47,7 @@ async fn main() -> Result<()> {
     println!("└──────────────────────────────────────────┘");
 
     println!("\n── Reactor GUI Audit Log ───────────────────");
-    hft_optimus::avm::audit_log(&route, &swap)?;
+    hft_core::avm::audit_log(&route, &swap)?;
 
     Ok(())
 }

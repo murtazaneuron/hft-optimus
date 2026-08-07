@@ -1,14 +1,14 @@
-# hft-optimus
+# hft-core
 
 **Optimal High-Frequency Trading Platform - Rig (Rust Inference Gateway / ARC)**
 
-[![Crates.io](https://img.shields.io/crates/v/hft-optimus.svg)](https://crates.io/crates/hft-optimus)
-[![Docs.rs](https://docs.rs/hft-optimus/badge.svg)](https://docs.rs/hft-optimus)
+[![Crates.io](https://img.shields.io/crates/v/hft-core.svg)](https://crates.io/crates/hft-core)
+[![Docs.rs](https://docs.rs/hft-core/badge.svg)](https://docs.rs/hft-core)
 [![Rust](https://img.shields.io/badge/rust-1.97.1%2B-orange.svg)](https://www.rust-lang.org/)
 [![Edition](https://img.shields.io/badge/edition-2024-blue.svg)](https://doc.rust-lang.org/edition-guide/rust-2024/)
 [![rig-core](https://img.shields.io/badge/rig--core-%5E0.36-purple.svg)](https://rig.rs)
 [![Solana](https://img.shields.io/badge/solana-devnet%2Fmainnet-9945FF.svg)](https://solana.com)
-[![CI](https://github.com/murtazaneuron/hft-optimus/actions/workflows/ci.yml/badge.svg)](https://github.com/murtazaneuron/hft-optimus/actions/workflows/ci.yml)
+[![CI](https://github.com/murtazaneuron/hft-core/actions/workflows/ci.yml/badge.svg)](https://github.com/murtazaneuron/hft-core/actions/workflows/ci.yml)
 [![License: MAI](https://img.shields.io/badge/license-MAI-blue.svg)](LICENSE-MAI)
 
 > Built by **[Murtaza Ali Imtiaz](https://github.com/murtazaneuron)** · Technology Lead · **mAI (🧠)** · July 2019 – Present
@@ -92,8 +92,8 @@ within a single Rust crate that compiles as both a library and a binary.
 
 ```bash
 # 1. Clone and enter
-git clone https://github.com/murtazaneuron/hft-optimus
-cd hft-optimus
+git clone https://github.com/murtazaneuron/hft-core
+cd hft-core
 
 # 2. Configure environment
 cp .env.example .env
@@ -114,11 +114,11 @@ cargo run --release -- --mode full --pair SOL/USDC --amount 1.0
 
 ```toml
 [dependencies]
-hft-optimus = "0.1"
+hft-core = "0.1"
 ```
 
 ```rust
-use hft_optimus::{config::Config, pev, sor};
+use hft_core::{config::Config, pev, sor};
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -142,7 +142,7 @@ async fn main() -> anyhow::Result<()> {
 
 ```
 USAGE:
-    hft-optimus [OPTIONS]
+    hft-core [OPTIONS]
 
 OPTIONS:
     -m, --mode <MODE>        Operating mode [default: full]
@@ -213,11 +213,11 @@ safe default.
 | `SOLANA_PRIVATE_KEY` | `DEMO_KEY_PLACEHOLDER` | Base-58 encoded keypair for signing. In production load from a secrets manager. |
 | `DRY_RUN` | `true` | When `true`, all on-chain operations are simulated and no real transactions are broadcast. |
 
-Log level defaults to `hft_optimus=debug`. Override at runtime:
+Log level defaults to `hft_core=debug`. Override at runtime:
 
 ```bash
 RUST_LOG=debug cargo run --release -- --mode full
-RUST_LOG=hft_optimus=trace cargo run --release -- --mode pev
+RUST_LOG=hft_core=trace cargo run --release -- --mode pev
 ```
 
 ---
@@ -285,7 +285,7 @@ Tokio task. Multiple concurrent trades cannot share or leak each other's signing
 with no mutex overhead.
 
 ```rust
-use hft_optimus::onchain::signer::{LocalSolanaSigner, with_signer};
+use hft_core::onchain::signer::{LocalSolanaSigner, with_signer};
 
 # async fn example() -> anyhow::Result<()> {
 let signer = LocalSolanaSigner::from_env();
@@ -357,8 +357,8 @@ Emits a structured three-phase execution trace at `INFO` level:
 ### Setup
 
 ```bash
-git clone https://github.com/murtazaneuron/hft-optimus
-cd hft-optimus
+git clone https://github.com/murtazaneuron/hft-core
+cd hft-core
 cp .env.example .env
 # Edit .env: optionally set ANTHROPIC_API_KEY=sk-ant-...
 ```
@@ -521,8 +521,8 @@ Runs independently so the nightly toolchain never interferes with the matrix job
 ## Repository Structure
 
 ```
-hft-optimus/
-hft-optimus/
+hft-core/
+hft-core/
 ├── Cargo.toml              Rust 2024; MSRV 1.97.1; all deps; [lints] table; [lib]
 ├── rustfmt.toml            100-col, Rust 2024 edition, crate-level import grouping
 ├── .clippy.toml            MSRV 1.97.1, cognitive-complexity 30
@@ -584,7 +584,7 @@ hft-optimus/
 
 | Decision | Rationale |
 |---|---|
-| Lib + bin targets from the same source tree | Integration tests are separate crates; `hft_optimus::` is the correct import prefix |
+| Lib + bin targets from the same source tree | Integration tests are separate crates; `hft_core::` is the correct import prefix |
 | Rust 2024 edition | Matches the rig upstream repository |
 | Haiku for Plan + Verify, Sonnet for Execute | 60–70% cost reduction vs all-Sonnet; Haiku handles structured, low-complexity steps |
 | `CompletionClient` + `ProviderClient` in all PEV files | Both required by rig-core ≥ 0.36 for `.agent()` method resolution |

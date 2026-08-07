@@ -1,4 +1,4 @@
-//! `hft-optimus` - CLI entry point.
+//! `hft-core` - CLI entry point.
 //!
 //! **mAI (🧠)** | Technology Lead: Murtaza Ali Imtiaz
 //!
@@ -27,7 +27,7 @@
 
 use anyhow::Result;
 use clap::{Parser, ValueEnum};
-use hft_optimus::{avm, config, onchain, pev, sor};
+use hft_core::{avm, config, onchain, pev, sor};
 use tracing::info;
 use tracing_subscriber::EnvFilter;
 
@@ -48,7 +48,7 @@ enum Mode {
 
 /// CLI arguments parsed by [`clap`].
 #[derive(Parser, Debug)]
-#[command(name = "hft-optimus")]
+#[command(name = "hft-core")]
 #[command(about = "Optimal HFT platform using Rig (ARC) - mAI (🧠)")]
 struct Args {
     /// Operating mode (default: `full`).
@@ -79,7 +79,7 @@ struct Args {
 async fn main() -> Result<()> {
     dotenvy::dotenv().ok();
     tracing_subscriber::fmt()
-        .with_env_filter(EnvFilter::from_default_env().add_directive("hft_optimus=debug".parse()?))
+        .with_env_filter(EnvFilter::from_default_env().add_directive("hft_core=debug".parse()?))
         .init();
 
     let args = Args::parse();

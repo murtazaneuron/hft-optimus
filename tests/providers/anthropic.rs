@@ -12,7 +12,7 @@
 //! Note: `test_live_sor_returns_known_venue` was previously here but has been
 //! moved to `tests/test_sor.rs` because it does not require an API key.
 
-use hft_optimus::{config::Config, pev};
+use hft_core::{config::Config, pev};
 
 /// Verify that the PEV plan phase successfully decomposes a trade via Haiku.
 ///

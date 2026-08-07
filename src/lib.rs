@@ -1,4 +1,4 @@
-//! # hft-optimus
+//! # hft-core
 //!
 //! **LLM-driven high-frequency trading platform on Solana**, built on
 //! [Rig (ARC)](https://rig.rs) - the Rust Inference Gateway.
@@ -13,7 +13,7 @@
 //!
 //! ```text
 //! ┌──────────────────────────────────────────────────────┐
-//! │                  hft-optimus                  │
+//! │                  hft-core                  │
 //! ├──────────┬──────────┬───────────┬─────────┬──────────┤
 //! │   pev    │   sor    │  onchain  │   avm   │  config  │
 //! │ Plan –   │ Smart    │ Jupiter   │ AVM     │ Env      │

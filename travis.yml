@@ -4,21 +4,21 @@ os: linux
 
 # ── Global env vars (mirrors `env:` block in ci.yml) ───────────────────────
 env:
-  global:
-    - CARGO_TERM_COLOR=always
-    - CARGO_INCREMENTAL=0   # disable incremental; full clean builds on CI
-    - RUST_BACKTRACE=short
-    - RUST_LOG=hft_optimus=debug
+    global:
+        - CARGO_TERM_COLOR=always
+        - CARGO_INCREMENTAL=0 # disable incremental; full clean builds on CI
+        - RUST_BACKTRACE=short
+        - RUST_LOG=hft_core=debug
 
 # Cancel in-flight builds for the same branch on new push
 # (Travis equivalent of GitHub's `concurrency:` block)
 git:
-  depth: false
+    depth: false
 
 branches:
-  only:
-    - main
-    - master
+    only:
+        - main
+        - master
 
 # Only build pushes to main/master and all pull requests
 # (mirrors `on: push: branches: [main, master]` + `on: pull_request`)
@@ -28,72 +28,72 @@ cache: cargo
 
 # ── Stages ──────────────────────────────────────────────────────────────────
 stages:
-  - fmt
-  - test
+    - fmt
+    - test
 
 jobs:
-  include:
-    # ── Format check ───────────────────────────────────────────────────────
-    # Runs on nightly, in its own stage, so nightly never touches the
-    # stable/MSRV matrix below. rustfmt.toml uses nightly-only options
-    # (imports_granularity, group_imports, wrap_comments, etc.) which
-    # require unstable_features = true and a nightly rustfmt binary.
-    - stage: fmt
-      name: "fmt (nightly rustfmt)"
-      rust: nightly
-      install:
-        - rustup component add rustfmt
-      script:
-        - cargo fmt --all -- --check
+    include:
+        # ── Format check ───────────────────────────────────────────────────────
+        # Runs on nightly, in its own stage, so nightly never touches the
+        # stable/MSRV matrix below. rustfmt.toml uses nightly-only options
+        # (imports_granularity, group_imports, wrap_comments, etc.) which
+        # require unstable_features = true and a nightly rustfmt binary.
+        - stage: fmt
+          name: "fmt (nightly rustfmt)"
+          rust: nightly
+          install:
+              - rustup component add rustfmt
+          script:
+              - cargo fmt --all -- --check
 
-    # ── CI matrix: stable ────────────────────────────────────────────────────
-    - stage: test
-      name: "CI - stable"
-      rust: stable
-      install:
-        - rustup component add clippy llvm-tools-preview
-        - cargo install cargo-llvm-cov --locked || true
-      script:
-        - cargo clippy --all-targets -- -D warnings
-        - cargo build --release
-        - SKIP_LLM=1 cargo test --workspace
-        - SKIP_LLM=1 cargo llvm-cov --workspace --lcov --output-path lcov.info --ignore-filename-regex 'tests/'
-        - SKIP_LLM=1 cargo llvm-cov report --html --output-dir coverage-html
-        - RUSTDOCFLAGS="--cfg docsrs -D warnings" cargo doc --no-deps
-      after_success:
-        # Upload coverage to Codecov, mirroring the token-presence check in
-        # ci.yml (skips quietly if CODECOV_TOKEN is unset)
-        - |
-          if [ -n "$CODECOV_TOKEN" ]; then
-            bash <(curl -s https://codecov.io/bash) -f lcov.info
-          else
-            echo "CODECOV_TOKEN not set - skipping Codecov upload."
-            echo "To enable: Travis CI repo settings -> Environment Variables -> CODECOV_TOKEN"
-          fi
-      before_deploy: skip
-      # HTML coverage report artifact (Travis doesn't have native artifact
-      # upload like GitHub Actions; this stages it for a deploy provider,
-      # e.g. S3/GitHub Pages/GitHub Releases, configured separately)
-      # deploy:
-      #   provider: releases
-      #   file: coverage-html
-      #   skip_cleanup: true
-      #   on:
-      #     branch: main
+        # ── CI matrix: stable ────────────────────────────────────────────────────
+        - stage: test
+          name: "CI - stable"
+          rust: stable
+          install:
+              - rustup component add clippy llvm-tools-preview
+              - cargo install cargo-llvm-cov --locked || true
+          script:
+              - cargo clippy --all-targets -- -D warnings
+              - cargo build --release
+              - SKIP_LLM=1 cargo test --workspace
+              - SKIP_LLM=1 cargo llvm-cov --workspace --lcov --output-path lcov.info --ignore-filename-regex 'tests/'
+              - SKIP_LLM=1 cargo llvm-cov report --html --output-dir coverage-html
+              - RUSTDOCFLAGS="--cfg docsrs -D warnings" cargo doc --no-deps
+          after_success:
+              # Upload coverage to Codecov, mirroring the token-presence check in
+              # ci.yml (skips quietly if CODECOV_TOKEN is unset)
+              - |
+                  if [ -n "$CODECOV_TOKEN" ]; then
+                    bash <(curl -s https://codecov.io/bash) -f lcov.info
+                  else
+                    echo "CODECOV_TOKEN not set - skipping Codecov upload."
+                    echo "To enable: Travis CI repo settings -> Environment Variables -> CODECOV_TOKEN"
+                  fi
+          before_deploy: skip
+          # HTML coverage report artifact (Travis doesn't have native artifact
+          # upload like GitHub Actions; this stages it for a deploy provider,
+          # e.g. S3/GitHub Pages/GitHub Releases, configured separately)
+          # deploy:
+          #   provider: releases
+          #   file: coverage-html
+          #   skip_cleanup: true
+          #   on:
+          #     branch: main
 
-    # ── CI matrix: MSRV ──────────────────────────────────────────────────────
-    - stage: test
-      name: "CI - 1.97.1 (MSRV)"
-      rust: "1.97.1"
-      install:
-        - rustup component add llvm-tools-preview
-        # clippy is intentionally not required to pass on MSRV
-        # (mirrors: `if: matrix.rust == 'stable'` gating clippy in ci.yml)
-      script:
-        - cargo build --release
-        - SKIP_LLM=1 cargo test --workspace
-        # Coverage, docs, and Codecov upload are stable-only in ci.yml,
-        # so they're intentionally omitted here too.
+        # ── CI matrix: MSRV ──────────────────────────────────────────────────────
+        - stage: test
+          name: "CI - 1.97.1 (MSRV)"
+          rust: "1.97.1"
+          install:
+              - rustup component add llvm-tools-preview
+              # clippy is intentionally not required to pass on MSRV
+              # (mirrors: `if: matrix.rust == 'stable'` gating clippy in ci.yml)
+          script:
+              - cargo build --release
+              - SKIP_LLM=1 cargo test --workspace
+              # Coverage, docs, and Codecov upload are stable-only in ci.yml,
+              # so they're intentionally omitted here too.
 
 notifications:
-  email: false
+    email: false

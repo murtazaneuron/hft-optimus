@@ -1,4 +1,4 @@
-# hft-optimus - Clippy configuration
+# hft-core - Clippy configuration
 # Mirrors the style used in the rig upstream repository.
 
 # Minimum Supported Rust Version - keep in sync with Cargo.toml rust-version.

@@ -19,7 +19,7 @@
 //! ## Usage
 //!
 //! ```rust,no_run
-//! use hft_optimus::{config::Config, pev};
+//! use hft_core::{config::Config, pev};
 //!
 //! # async fn example(cfg: &Config) -> anyhow::Result<()> {
 //! let result = pev::run(cfg, "SOL/USDC", 1.0).await?;

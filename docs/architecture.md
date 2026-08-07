@@ -1,10 +1,10 @@
-# hft-optimus
+# hft-core
 
 ## HIGH-LEVEL ARCHITECTURE DIAGRAM
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
-│                    hft-optimus                                   │
+│                    hft-core                                   │
 │                    Optimal HFT Platform  (Rig / ARC)                    │
 └─────────────────────────────────────────────────────────────────────────┘
                                     │

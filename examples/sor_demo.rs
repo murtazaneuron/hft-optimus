@@ -13,10 +13,10 @@ use tracing_subscriber::EnvFilter;
 #[tokio::main]
 async fn main() -> Result<()> {
     tracing_subscriber::fmt()
-        .with_env_filter(EnvFilter::new("hft_optimus=info"))
+        .with_env_filter(EnvFilter::new("hft_core=info"))
         .init();
 
-    let route = hft_optimus::sor::best_route("SOL/USDC", 1.0).await?;
+    let route = hft_core::sor::best_route("SOL/USDC", 1.0).await?;
 
     println!("┌─────────────────────────────────────┐");
     println!("│  SOR Result                         │");

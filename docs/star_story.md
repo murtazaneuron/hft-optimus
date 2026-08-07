@@ -1,4 +1,4 @@
-# hft-optimus
+# hft-core
 
 ## Star Story
 

@@ -6,7 +6,7 @@
    Root Cause: solana-sdk 1.18 hard-pinned ed25519-dalek = "=1.0.1" (exact version, v1). The project directly required ed25519-dalek = "^2". Cargo could not unify a v1 exact pin with a v2 requirement, they were different semver epochs and incompatible. Every version in the ^1.18 range had this same pin, so no 1.18.x release could ever resolve.
 3. Fix: Deleted Cargo.lock. Cargo regenerated it cleanly on the next cargo build.
    Root Cause: The locked graph pinned the old rig-core 0.9.1 and solana-sdk 1.18 resolutions. 
-4. Fix: All crate:: references replaced with hft_optimus::. Integration tests are external crates; crate:: in them refered to the test crate itself, not the project being tested.
+4. Fix: All crate:: references replaced with hft_core::. Integration tests are external crates; crate:: in them refered to the test crate itself, not the project being tested.
    Files: tests/test_pev_loop.rs, test_sor.rs, & test_signer_context.rs
 5. Fix: format! had the string "Acceptance criteria: {:?}\nExecute this task now." as the first positional arg (filling in Task ID: {}), then 5 more args for 4 placeholders: compile error argument never used. Reordered to build the prompt correctly.
    File: src/pev/execute.rs
@@ -18,9 +18,9 @@
    File: src/pev/plan.rs
 7. Fix: Added pub mod {orca,raydium,router,serum} and pub use router::best_route. main.rs calls sor::best_route(...) 
    File: src/sor/mod.rs
-8. Fix: Replaced mod avm; mod config; … with use hft_optimus::{avm, config, onchain, pev, sor};. The binary now re-used the lib's compiled modules instead of redeclaring them.
+8. Fix: Replaced mod avm; mod config; … with use hft_core::{avm, config, onchain, pev, sor};. The binary now re-used the lib's compiled modules instead of redeclaring them.
    File: src/main.rs
-9. Fix: Added a library root that re-exports all five modules (avm, config, onchain, pev, sor). Integration tests in tests/ compile as a separate crate, they count not use crate:: to reach into a [[bin]]. Adding a lib target made hft_optimus:: the correct prefix.
+9. Fix: Added a library root that re-exports all five modules (avm, config, onchain, pev, sor). Integration tests in tests/ compile as a separate crate, they count not use crate:: to reach into a [[bin]]. Adding a lib target made hft_core:: the correct prefix.
    File: New file src/lib.rs
 10. Fix: Used rig-core ^0.36. the providers::anthropic API used in the code matched the 0.36 surface
     Root Cause: rig-core 0.9.1 was stale; 

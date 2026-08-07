@@ -59,7 +59,7 @@ impl LocalSolanaSigner {
     /// # Examples
     ///
     /// ```rust,no_run
-    /// use hft_optimus::onchain::signer::LocalSolanaSigner;
+    /// use hft_core::onchain::signer::LocalSolanaSigner;
     ///
     /// let s = LocalSolanaSigner::from_env();
     /// println!("signer pubkey: {}", s.pubkey());
@@ -100,7 +100,7 @@ impl LocalSolanaSigner {
 /// # Examples
 ///
 /// ```rust,no_run
-/// use hft_optimus::onchain::signer::{with_signer, LocalSolanaSigner};
+/// use hft_core::onchain::signer::{with_signer, LocalSolanaSigner};
 ///
 /// # #[tokio::main]
 /// # async fn main() -> anyhow::Result<()> {

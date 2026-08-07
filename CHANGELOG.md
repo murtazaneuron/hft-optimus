@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to `hft-optimus` are documented here.
+All notable changes to `hft-core` are documented here.
 
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
@@ -90,7 +90,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 | 1 | Removed fictitious `features = ["anthropic", "openai", "cohere"]` from `rig-core` |
 | 2 | Upgraded Solana crates to `^3` / `spl-token ^9` to resolve `ed25519-dalek` v1/v2 conflict |
 | 3 | Deleted stale `Cargo.lock` with pinned old resolution graph |
-| 4 | Replaced `crate::` with `hft_optimus::` in integration tests |
+| 4 | Replaced `crate::` with `hft_core::` in integration tests |
 | 5 | Corrected `format!` positional-arg mismatch in `execute.rs` |
 | 6 | Removed unused `rig::tool::Tool` import from `execute.rs` |
 | 7 | Merged stray second string literal into the `format!` call in `plan.rs` |

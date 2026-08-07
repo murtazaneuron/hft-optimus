@@ -1,4 +1,4 @@
-# hft-optimus - rustfmt configuration
+# hft-core - rustfmt configuration
 # Mirrors the style used in the rig upstream repository.
 
 edition = "2024"

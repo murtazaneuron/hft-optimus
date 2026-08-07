@@ -5,7 +5,7 @@
 //! deterministic, pure-Rust code paths.  They pass with or without
 //! `ANTHROPIC_API_KEY` in the environment.
 
-use hft_optimus::{
+use hft_core::{
     config::Config,
     pev::types::{ExecuteOutput, TradeAction, TradeTask},
 };
@@ -97,7 +97,7 @@ fn test_config_has_api_key_present() {
 #[tokio::test]
 async fn test_pev_run_stub_mode_passes() {
     let cfg = offline_config();
-    let result = hft_optimus::pev::run(&cfg, "SOL/USDC", 1.0)
+    let result = hft_core::pev::run(&cfg, "SOL/USDC", 1.0)
         .await
         .expect("pev::run must not fail in stub mode");
     assert!(
@@ -113,7 +113,7 @@ async fn test_pev_run_stub_mode_passes() {
 #[tokio::test]
 async fn test_plan_decompose_stub_mode() {
     let cfg = offline_config();
-    let tasks = hft_optimus::pev::plan::decompose(&cfg, "SOL/USDC", 2.5)
+    let tasks = hft_core::pev::plan::decompose(&cfg, "SOL/USDC", 2.5)
         .await
         .expect("plan::decompose must not fail in stub mode");
     assert_eq!(tasks.len(), 4, "stub decompose must return 4 tasks");
@@ -129,12 +129,12 @@ async fn test_verify_score_stub_mode() {
     let cfg = offline_config();
     let task = make_task();
     let output = make_output("any result");
-    let (score, feedback, passed) = hft_optimus::pev::verify::score(&cfg, &task, &output)
+    let (score, feedback, passed) = hft_core::pev::verify::score(&cfg, &task, &output)
         .await
         .expect("verify::score must not fail in stub mode");
     assert!(passed, "stub verify must pass");
     assert!(
-        score >= hft_optimus::pev::verify::PASS_THRESHOLD,
+        score >= hft_core::pev::verify::PASS_THRESHOLD,
         "stub score must be >= PASS_THRESHOLD"
     );
     assert!(
@@ -148,7 +148,7 @@ async fn test_verify_score_stub_mode() {
 /// `default_tasks_pub` should produce exactly four tasks.
 #[test]
 fn test_plan_default_tasks_count() {
-    let tasks = hft_optimus::pev::plan::default_tasks_pub("SOL/USDC", 1.0);
+    let tasks = hft_core::pev::plan::default_tasks_pub("SOL/USDC", 1.0);
     assert_eq!(tasks.len(), 4, "expected 4 default tasks");
 }
 
@@ -156,7 +156,7 @@ fn test_plan_default_tasks_count() {
 #[test]
 fn test_verify_pass_threshold() {
     assert!(
-        (hft_optimus::pev::verify::PASS_THRESHOLD - 0.80).abs() < f64::EPSILON,
+        (hft_core::pev::verify::PASS_THRESHOLD - 0.80).abs() < f64::EPSILON,
         "PASS_THRESHOLD must be 0.80"
     );
 }

@@ -1,4 +1,4 @@
-// hft-optimus – Zed project-local settings
+// hft-core – Zed project-local settings
 //
 // Mirrors the project's rustfmt.toml (.clippy.toml) and Cargo.toml lint table
 // so every Zed session automatically applies the same style and analysis
